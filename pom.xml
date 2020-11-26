@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.vpetrou</groupId>
+  <artifactId>tmp-bdd</artifactId>
+  <name>TMP BDD Tests</name>
+  <version>4.0.3</version>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+
+    <env.properties>src/main/resources/env.properties</env.properties>
+    <project.encoding>UTF-8</project.encoding>
+    <project.build.sourceEncoding>${project.encoding}</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>${project.encoding}</project.reporting.outputEncoding>
+
+    <cucumber.version>6.8.2</cucumber.version>
+    <selenium.version>4.0.0-alpha-6</selenium.version>
+    <rest-assured.version>4.3.2</rest-assured.version>
+    <json.version>20200518</json.version>
+    <hamcrest.version>2.2</hamcrest.version>
+    <assertj-core.version>3.18.0</assertj-core.version>
+    <slf4j-simple.version>2.0.0-alpha1</slf4j-simple.version>
+    <gson.version>2.8.6</gson.version>
+    <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+    <maven-cucumber-reporting.version>5.3.0</maven-cucumber-reporting.version>
+    <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
+    <!--Overwrite this with '-DskipTests' when clean install WITHOUT running tests is requested-->
+    <skipTests>false</skipTests>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <version>${cucumber.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit</artifactId>
+      <version>${cucumber.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>${selenium.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j-simple.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${maven-antrun-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>createRetryFailedScenariosFolder</id>
+            <phase>process-resources</phase>
+            <configuration>
+              <target>
+                <chmod dir="${project.build.directory}" perm="777"/>
+                <mkdir dir="${project.build.directory}/failed_scenarios/"/>
+                <touch file="${project.build.directory}/failed_scenarios/failed_once.txt"/>
+                <touch file="${project.build.directory}/failed_scenarios/failed_twice.txt"/>
+              </target>
+              <skip>${skipTests}</skip>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <testFailureIgnore>true</testFailureIgnore>
+          <runOrder>alphabetical</runOrder>
+          <includes>
+            <include>com/vpetrou/runners/*.java</include>
+          </includes>
+          <systemProperties>
+            <property>
+              <name>env.properties</name>
+              <value>${env.properties}</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>net.masterthought</groupId>
+        <artifactId>maven-cucumber-reporting</artifactId>
+        <version>${maven-cucumber-reporting.version}</version>
+        <executions>
+          <execution>
+            <id>execution</id>
+            <phase>install</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <projectName>${project.name}</projectName>
+              <buildNumber>${project.version}</buildNumber>
+              <skip>${skipTests}</skip>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <inputDirectory>${project.build.directory}</inputDirectory>
+              <jsonFiles>
+                <param>*.json</param>
+              </jsonFiles>
+              <mergeFeaturesWithRetest>true</mergeFeaturesWithRetest>
+              <mergeFeaturesById>true</mergeFeaturesById>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
